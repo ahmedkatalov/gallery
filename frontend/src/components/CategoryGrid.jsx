@@ -2,22 +2,14 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function CategoryGrid() {
+  // === КАТЕГОРИИ ===
   const cards = [
-    { key: 'gates',  to: '/gates',  title: 'Ворота',  cover: '/covers/gates.jpg',  emojiFallback: '🚪' },
-    { key: 'rails',  to: '/rails',  title: 'Перила',  cover: '/covers/rails.jpg',  emojiFallback: '🪜' },
-    { key: 'canopy', to: '/canopy', title: 'Навесы',  cover: '/covers/canopy.jpg', emojiFallback: '🏠' },
+    { key: 'gates',  to: '/gates',  title: 'Ворота',  cover: '/images/whatsapp1.jpeg' },
+    { key: 'rails',  to: '/rails',  title: 'Перила',  cover: '/images/whatsapp3.jpeg' },
+    { key: 'canopy', to: '/canopy', title: 'Навесы',  cover: '/images/whatsapp2.jpeg' },
   ]
 
-  const onImgError = (e, emoji) => {
-    e.currentTarget.style.display = 'none'
-    const wrapper = e.currentTarget.parentElement
-    const emojiNode = document.createElement('div')
-    emojiNode.className = 'category-card__emoji'
-    emojiNode.textContent = emoji
-    wrapper.appendChild(emojiNode)
-  }
-
-  // WhatsApp
+  // === WhatsApp ===
   const phoneRaw = import.meta.env.VITE_WHATSAPP_PHONE || ''
   const phoneDigits = phoneRaw.replace(/[^\d]/g, '')
   const waText = `Здравствуйте! Пишу из сайта "Кованые изделия"`
@@ -25,49 +17,46 @@ export default function CategoryGrid() {
     ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(waText)}`
     : null
 
-  // === НАСТРОЙКА АДРЕСА ===
-  // Здесь укажи свой адрес (строкой)
-  const address = "Чеченская Республика, Гудерместский район, село Нижний Найбер, ул. Садовая, д. 36"
-
-  // (Опционально) координаты для точного попадания
-  // Чтобы получить координаты — найди дом в Google Maps, ПКМ → «Что здесь?»
-  // и вставь lat/lng:
-  const coords = { lat: 43.342123, lng: 46.098765 }  // ← ЗАМЕНИ на свои координаты
-
-  // Формируем ссылку на Google Maps
-  const mapsUrl = coords
-    ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+  // === Адрес ===
+  const address = "Россия, Чеченская Республика, Гудерместский район, село Нижний Найбер, ул. Садовая, д. 36"
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
 
   const [routeOpen, setRouteOpen] = useState(false)
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="page-title" style={{ marginBottom: 16 }}>
+      {/* === Верхний блок: заголовок + кнопки справа === */}
+      <div className="flex flex-col  sm:flex-row sm:items-center sm:justify-between mb-8">
+        {/* Левая часть */}
+        <h1 className="page-title text-3xl font-semibold mb-4 sm:mb-0">
           Кованые изделия
         </h1>
 
-        <div className="flex gap-2">
+        {/* Правая часть (кнопки) */}
+        <div className="flex gap-3 sm:justify-end">
           {waHref && (
             <a
-              className="btn outline flex items-center gap-2"
+              className="btn outline flex items-center gap-2 whitespace-nowrap"
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <img src="/icons/whatsapp.svg" alt="" className="w-5 h-5" />
+              <img src="/images/iconWhatsapp.png" alt="" className="w-5 h-5" />
               WhatsApp
             </a>
           )}
 
-          {/* Новая кнопка «Проложить маршрут» */}
-          <button className="btn primary" onClick={() => setRouteOpen(true)}>
-            Проложить маршрут
+          <button
+            className="btn outline flex items-center gap-2 whitespace-nowrap"
+            onClick={() => setRouteOpen(true)}
+          >
+            <img src="/images/iconMap.png" alt="" className="w-5 h-5" />
+            Как нас найти
           </button>
         </div>
       </div>
 
+      {/* === Сетка категорий === */}
       <div className="cat-grid">
         {cards.map(c => (
           <Link
@@ -80,7 +69,9 @@ export default function CategoryGrid() {
               className="category-card__bg"
               src={c.cover}
               alt={c.title}
-              onError={(e) => onImgError(e, c.emojiFallback)}
+              onError={(e) => {
+                e.currentTarget.src = '/images/fallback.jpg'
+              }}
             />
             <div className="category-card__overlay" />
             <div className="category-card__content">
@@ -91,7 +82,7 @@ export default function CategoryGrid() {
         ))}
       </div>
 
-      {/* === Модальное окно с адресом === */}
+      {/* === Модальное окно === */}
       {routeOpen && (
         <div
           className="modal-backdrop fancy"
@@ -108,32 +99,130 @@ export default function CategoryGrid() {
               <button
                 className="modal-close"
                 onClick={() => setRouteOpen(false)}
+                aria-label="Закрыть"
               >
                 ×
               </button>
             </div>
 
             <div className="modal-body" style={{ display: 'grid', gap: 16 }}>
-              <p>
+              <p style={{ margin: 0 }}>
                 Наш адрес:<br />
                 <strong>{address}</strong>
               </p>
-              <p>
-                Нажмите кнопку ниже, чтобы открыть маршрут в Google Картах
-                (или другом навигаторе на телефоне).
+              <p style={{ margin: 0 }}>
+                Нажмите кнопку ниже, чтобы открыть маршрут в Google Картах.
               </p>
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn primary"
-              >
-                Проложить путь
-              </a>
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn primary"
+                >
+                  Проложить путь
+                </a>
+
+                <button
+                  className="btn"
+                  onClick={() => {
+                    window.open(mapsUrl, '_blank', 'noopener,noreferrer')
+                  }}
+                >
+                  Открыть карту
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* === Стили === */}
+      <style>{`
+        /* --- Карточки --- */
+        .category-card__bg { 
+          width: 100%; 
+          height: 240px; 
+          object-fit: cover; 
+          border-radius: 8px; 
+        }
+
+        /* --- Модалка --- */
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.6);
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          z-index: 1000;
+          backdrop-filter: blur(2px);
+        }
+
+        .modal-box {
+          background: #0b1220;
+          color: #e6eef8;
+          border-radius: 16px 16px 0 0;
+          padding: 20px;
+          width: 100%;
+          max-width: 600px;
+          box-shadow: 0 -6px 30px rgba(3,10,18,0.6);
+          animation: slideUp 0.35s ease;
+          border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .modal-title {
+          font-size: 1.15rem;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .modal-close {
+          font-size: 1.4rem;
+          line-height: 1;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          color: #dbe9ff;
+          padding: 6px 10px;
+          border-radius: 8px;
+        }
+
+        .modal-close:hover {
+          background: rgba(255,255,255,0.02);
+        }
+
+        .modal-box .btn.primary {
+          background: linear-gradient(180deg, #2b7cff 0%, #1462d6 100%);
+          color: #fff;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 8px;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .modal-box .btn {
+          background: transparent;
+          color: #dbe9ff;
+          border: 1px solid rgba(255,255,255,0.06);
+          padding: 8px 12px;
+          border-radius: 8px;
+        }
+
+        @keyframes slideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to   { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
     </>
   )
 }

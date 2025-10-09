@@ -49,7 +49,7 @@ export default function GroupCard({ group, onClick, onDeleted }) {
         <button className="btn danger" onClick={onDelete}>Удалить</button>
       </div>
 
-      <div className="badge mt-1">
+      <div className="badge mt-1 ">
         Категория: {group.category === 'gates' ? 'Ворота' : group.category === 'rails' ? 'Перила' : 'Навесы'}
       </div>
 

@@ -91,7 +91,7 @@ const navigate = useNavigate();
       {/* Тулбар только на страницах категории */}
       {pageTitle && (
         <div className="page-toolbar">
-          <h1 className="page-title" style={{ margin: 0 }}>{pageTitle}</h1>
+          <h1 className="page-title text-2xl" style={{ margin: 0 }}>{pageTitle}</h1>
           <div className="toolbar-actions">
             {waHref && (
               <a className="btn outline" href={waHref} target="_blank" rel="noopener noreferrer">
