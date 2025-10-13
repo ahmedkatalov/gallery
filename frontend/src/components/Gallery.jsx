@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { api } from '../api'
 import GroupCard from './GroupCard'
 import Lightbox from './Lightbox'
 
-export default function Gallery({ category, groupId }) {
+export default function Gallery({ category: propCategory }) {
+  const { groupId: routeGroupId } = useParams()
+  const location = useLocation()
   const [groups, setGroups] = useState([])
   const [lightbox, setLightbox] = useState({ open: false, g: 0, i: 0 })
-  const location = useLocation()
+  const [groupId, setGroupId] = useState(routeGroupId || null)
 
+  // безопасный парсер массивов
   const safeParseArray = (v) => {
     try {
       const parsed = typeof v === 'string' ? JSON.parse(v) : v
@@ -18,45 +21,58 @@ export default function Gallery({ category, groupId }) {
     }
   }
 
-  // Загружаем группы
+  // Загружаем все группы
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const config = category ? { params: { category } } : undefined
+        const config = propCategory ? { params: { category: propCategory } } : undefined
         const { data } = await api.get('/api/photos', config)
 
         let normalized = (Array.isArray(data) ? data : []).map(g => ({
           group_id: g.group_id,
-          category: g.category || category || null,
+          category: g.category || propCategory || null,
           photos: Array.isArray(g.photos) ? g.photos : safeParseArray(g.photos),
         }))
 
-        if (groupId) normalized = normalized.filter(g => g.group_id === groupId)
         if (!cancelled) setGroups(normalized)
       } catch (e) {
-        console.error('Failed to load groups:', e)
+        console.error('Ошибка загрузки:', e)
         if (!cancelled) setGroups([])
       }
     })()
-    return () => { cancelled = true }
-  }, [category, groupId])
 
-  // Проверяем URL на photoIndex и открываем Lightbox
+    return () => { cancelled = true }
+  }, [propCategory])
+
+  // Открываем Lightbox по URL параметрам
   useEffect(() => {
-    if (!groups.length || !groupId) return
+    if (!groups.length) return
     const params = new URLSearchParams(location.search)
     const photoIndex = parseInt(params.get('photo') || '0', 10)
-    const gi = groups.findIndex(g => g.group_id === groupId)
-    if (gi >= 0) setLightbox({ open: true, g: gi, i: photoIndex })
-  }, [groups, groupId, location.search])
+    const gid = routeGroupId
+    if (!gid) return
+
+    const gi = groups.findIndex(g => g.group_id === gid)
+    if (gi >= 0) {
+      setLightbox({ open: true, g: gi, i: photoIndex })
+    }
+  }, [groups, routeGroupId, location.search])
+
+  // Закрываем Lightbox и возвращаемся к полному списку
+  const closeLightbox = () => {
+    setLightbox({ open: false, g: 0, i: 0 })
+    setGroupId(null)
+    window.history.replaceState({}, '', `/${propCategory}`) // 🧠 очищаем URL от groupId и ?photo
+  }
 
   const open = (groupIndex, photoIndex) => setLightbox({ open: true, g: groupIndex, i: photoIndex })
-  const close = () => setLightbox({ open: false, g: 0, i: 0 })
 
   return (
     <>
-      {groups.length === 0 && <div className="card center" style={{ minHeight: 120 }}>Пока нет фото</div>}
+      {groups.length === 0 && (
+        <div className="card center" style={{ minHeight: 120 }}>Пока нет фото</div>
+      )}
 
       <div className="grid">
         {groups.map((group, gi) => (
@@ -73,12 +89,18 @@ export default function Gallery({ category, groupId }) {
         <Lightbox
           photos={groups[lightbox.g].photos}
           index={lightbox.i}
-          onClose={close}
+          onClose={closeLightbox}
           onPrev={() =>
-            setLightbox(s => ({ ...s, i: (s.i - 1 + groups[s.g].photos.length) % groups[s.g].photos.length }))
+            setLightbox(s => ({
+              ...s,
+              i: (s.i - 1 + groups[s.g].photos.length) % groups[s.g].photos.length,
+            }))
           }
           onNext={() =>
-            setLightbox(s => ({ ...s, i: (s.i + 1) % groups[s.g].photos.length }))
+            setLightbox(s => ({
+              ...s,
+              i: (s.i + 1) % groups[s.g].photos.length,
+            }))
           }
         />
       )}

@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import OwnerAccessModal from './OwnerAccessModal'
 
 export default function CategoryGrid() {
   const cards = [
@@ -14,9 +16,34 @@ export default function CategoryGrid() {
     ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(waText)}`
     : null
 
+  const [modalOpen, setModalOpen] = useState(false)
+  const [isOwner, setIsOwner] = useState(false)
+
+  // Проверяем localStorage
+  useEffect(() => {
+    const flag = localStorage.getItem('isOwner') === 'true'
+    setIsOwner(flag)
+  }, [])
+
+  const handleOwnerLogin = (code) => {
+    const masterCode = import.meta.env.VITE_SECRET_CODE || '1234'
+    if (code.trim() === masterCode) {
+      setIsOwner(true)
+      localStorage.setItem('isOwner', 'true')
+      setModalOpen(false)
+    } else {
+      alert('Неверный секретный код')
+    }
+  }
+
+  const handleLogout = () => {
+    setIsOwner(false)
+    localStorage.removeItem('isOwner')
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* === Фон с падающими искрами === */}
+      {/* === Искры === */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(10)].map((_, i) => (
           <div key={i} className="spark"></div>
@@ -25,25 +52,23 @@ export default function CategoryGrid() {
 
       {/* === Контент === */}
       <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* === Заголовок === */}
-<h1
-  className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-center mb-10 
-             text-transparent bg-clip-text bg-gradient-to-b from-[#f5f5f5] to-[#a0a0a0]
-             drop-shadow-[0_3px_6px_rgba(0,0,0,0.7)]"
-  style={{
-    WebkitTextStroke: '1px rgba(255,255,255,0.15)',
-    textShadow: `
-      0 1px 2px rgba(255,255,255,0.3),
-      0 2px 4px rgba(0,0,0,0.8),
-      0 3px 6px rgba(0,0,0,0.6)
-    `,
-  }}
->
-  Кованые изделия
-</h1>
+        <h1
+          className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-center mb-10 
+                     text-transparent bg-clip-text bg-gradient-to-b from-[#f5f5f5] to-[#a0a0a0]
+                     drop-shadow-[0_3px_6px_rgba(0,0,0,0.7)]"
+          style={{
+            WebkitTextStroke: '1px rgba(255,255,255,0.15)',
+            textShadow: `
+              0 1px 2px rgba(255,255,255,0.3),
+              0 2px 4px rgba(0,0,0,0.8),
+              0 3px 6px rgba(0,0,0,0.6)
+            `,
+          }}
+        >
+          Кованые изделия
+        </h1>
 
-
-        {/* === Сетка карточек === */}
+        {/* Сетка */}
         <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
           {cards.map((c) => (
             <Link
@@ -59,9 +84,7 @@ export default function CategoryGrid() {
                 src={c.cover}
                 alt={c.title}
                 className="absolute inset-0 w-full h-full object-cover transition duration-300 transform hover:scale-105 hover:saturate-150"
-                onError={(e) => {
-                  e.currentTarget.src = '/images/fallback.jpg'
-                }}
+                onError={(e) => { e.currentTarget.src = '/images/fallback.jpg' }}
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/60"></div>
               <div className="absolute left-4 right-4 bottom-4 grid gap-1.5 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
@@ -75,14 +98,14 @@ export default function CategoryGrid() {
         </div>
       </div>
 
-      {/* === Плавающая кнопка WhatsApp === */}
+      {/* WhatsApp */}
       {waHref && (
         <a
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Написать в WhatsApp"
-          className="fixed bottom-5 right-5 z-[999]
+          className="fixed bottom-5 right-5 z-[998]
                      flex items-center justify-center 
                      w-[56px] h-[56px] rounded-full 
                      bg-[#25D366] shadow-lg 
@@ -93,7 +116,29 @@ export default function CategoryGrid() {
         </a>
       )}
 
-      {/* === CSS-анимации искр === */}
+      {/* Кнопка владельца */}
+      <button
+        onClick={() => (isOwner ? handleLogout() : setModalOpen(true))}
+        className={`fixed bottom-5 right-[80px] z-[999] flex items-center justify-center w-[56px] h-[56px]
+                   rounded-full transition-all duration-300 ease-out 
+                   ${isOwner
+                     ? 'bg-gradient-to-br from-red-400/70 to-red-600/70 hover:scale-110'
+                     : 'bg-gradient-to-br from-blue-400/70 to-blue-600/70 hover:scale-110'} 
+                   shadow-[0_0_20px_rgba(0,0,0,0.4)] backdrop-blur-lg border border-white/20`}
+        title={isOwner ? 'Выйти из режима владельца' : 'Войти как владелец'}
+      >
+        {isOwner ? '×' : '🔑'}
+      </button>
+
+      {/* Модалка ввода кода */}
+      {modalOpen && (
+        <OwnerAccessModal
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleOwnerLogin}
+        />
+      )}
+
+      {/* Искры */}
       <style>{`
         .spark {
           position: absolute;
@@ -105,7 +150,6 @@ export default function CategoryGrid() {
           opacity: 0.9;
           animation: fall 2s linear infinite;
         }
-
         .spark:nth-child(1) { left: 5%; animation-duration: 2.2s; animation-delay: 0s; }
         .spark:nth-child(2) { left: 15%; animation-duration: 2.8s; animation-delay: 0.3s; }
         .spark:nth-child(3) { left: 25%; animation-duration: 2.4s; animation-delay: 0.6s; }
@@ -116,19 +160,10 @@ export default function CategoryGrid() {
         .spark:nth-child(8) { left: 75%; animation-duration: 3.2s; animation-delay: 0.5s; }
         .spark:nth-child(9) { left: 85%; animation-duration: 2.7s; animation-delay: 1.1s; }
         .spark:nth-child(10) { left: 95%; animation-duration: 2.6s; animation-delay: 0.2s; }
-
         @keyframes fall {
-          0% {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-          }
-          70% {
-            opacity: 0.9;
-          }
-          100% {
-            transform: translateY(110vh) scale(0.7);
-            opacity: 0;
-          }
+          0% { transform: translateY(0) scale(1); opacity: 1; }
+          70% { opacity: 0.9; }
+          100% { transform: translateY(110vh) scale(0.7); opacity: 0; }
         }
       `}</style>
     </div>
