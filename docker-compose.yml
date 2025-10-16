@@ -44,7 +44,8 @@ services:
       dockerfile: Dockerfile
       args:
         # ⚙️ здесь URL к backend внутри docker-сети
-        VITE_API_URL: "http://176.113.83.92:8080/api"
+       VITE_API_URL: "http://176.113.83.92:8080/api"
+
 
         VITE_WHATSAPP_PHONE: ${VITE_WHATSAPP_PHONE}
         VITE_SECRET_CODE: ${SECRET_CODE}   # 🔥 добавляем, чтобы фронт тоже знал код
