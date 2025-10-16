@@ -3,7 +3,7 @@ import axios from 'axios'
 
 // VITE_API_BASE можно задать в .env (например, http://localhost:8080)
 // по умолчанию берём http://localhost:8080
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 export const api = axios.create({
   baseURL: API_BASE,
