@@ -2,33 +2,33 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Копируем package.json и устанавливаем зависимости
+# Устанавливаем зависимости
 COPY package*.json ./
 RUN npm ci || npm install
 
-# Копируем всё остальное
+# Копируем весь проект
 COPY . .
 
-# Передаём аргументы сборки
+# Подтягиваем переменные окружения из docker-compose
 ARG VITE_API_URL
 ARG VITE_WHATSAPP_PHONE
 ARG VITE_SECRET_CODE
 
-# Делаем их переменными окружения для Vite
+# Прокидываем их в ENV, чтобы Vite смог использовать
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_WHATSAPP_PHONE=${VITE_WHATSAPP_PHONE}
 ENV VITE_SECRET_CODE=${VITE_SECRET_CODE}
 
-# Сборка фронта
-RUN echo "⚙️ Building with API URL: $VITE_API_URL" && npm run build
+# 🧠 Добавляем вывод для проверки
+RUN echo "⚙️ Building with VITE_API_URL=$VITE_API_URL" && npm run build
 
 # === Stage 2: Nginx runtime ===
 FROM nginx:1.27-alpine
 
-# Копируем nginx-конфиг
+# Копируем nginx конфиг
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Копируем собранный фронт
+# Копируем собранный билд
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
