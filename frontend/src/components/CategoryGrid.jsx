@@ -65,7 +65,7 @@ export default function CategoryGrid() {
             `,
           }}
         >
-          Кованые изделия
+          Кованыеe изделия
         </h1>
 
         {/* Сетка */}
