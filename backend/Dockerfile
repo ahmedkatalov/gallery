@@ -13,13 +13,15 @@ WORKDIR /app
 RUN apk add --no-cache curl
 RUN addgroup -S appuser && adduser -S -G appuser appuser \
     && mkdir -p /app/static/uploads \
-    && chown -R appuser:appuser /app/static/uploads
+    && chown -R appuser:appuser /app/static/uploads \
+    && chmod -R 755 /app/static/uploads
 
 COPY --from=builder /app/server /app/server
 USER appuser
 
 EXPOSE 8080
+
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:8080/api/health || exit 1
+  CMD curl -fsS http://127.0.0.1:8080/api/photos || exit 1
 
 CMD ["/app/server"]
