@@ -40,7 +40,7 @@ services:
       dockerfile: Dockerfile
       args:
         # 👇 внутри контейнера фронт видит backend по имени сервиса, не по IP
-        VITE_API_URL: "http://backend:8080"
+        VITE_API_URL: "http://176.113.83.92:8080"
         VITE_WHATSAPP_PHONE: ${VITE_WHATSAPP_PHONE}
         VITE_SECRET_CODE: ${SECRET_CODE}
     container_name: gallery_frontend
