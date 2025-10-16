@@ -44,26 +44,31 @@ export default function UploadForm() {
     setFiles(prev => prev.concat(asArray).slice(0, 4))
     if (inputRef.current) inputRef.current.value = ''
   }
+const handleUpload = async () => {
+  if (!files.length) return toast.warn('Загрузите хотя бы одно фото')
 
-  const handleUpload = async () => {
-    if (!files.length) return toast.warn('Загрузите хотя бы одно фото')
+  setLoading(true)
+  try {
+    const fd = new FormData()
 
-    setLoading(true)
-    try {
-      const fd = new FormData()
-      fd.set('code', 'ownerMode')
-      fd.set('description', desc)
-      fd.set('category', category)
-      files.forEach(f => fd.append('photos', f))
-      await api.post('/api/photos', fd)
-      toast.success('Фото успешно загружены')
-      window.location.reload()
-    } catch (err) {
-      toast.error('Ошибка загрузки: ' + (err?.response?.data || err.message))
-    } finally {
-      setLoading(false)
-    }
+    // ✅ Берём реальный код владельца из localStorage (сохраняется при входе)
+    const ownerCode = localStorage.getItem('ownerCode')
+    if (ownerCode) fd.set('code', ownerCode)
+
+    fd.set('description', desc)
+    fd.set('category', category)
+    files.forEach(f => fd.append('photos', f))
+
+    await api.post('/api/photos', fd)
+    toast.success('Фото успешно загружены')
+    window.location.reload()
+  } catch (err) {
+    toast.error('Ошибка загрузки: ' + (err?.response?.data || err.message))
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const catObj = CATS.find(c => c.value === category)
   const pageTitle = catObj?.label || ''
