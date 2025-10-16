@@ -29,7 +29,6 @@ services:
     restart: unless-stopped
     environment:
       SECRET_CODE: ${SECRET_CODE}
-      # теперь backend подключается к контейнеру db, а не к localhost
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
     ports:
       - "8080:8080"
@@ -44,9 +43,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # frontend внутри сети обращается к backend по имени сервиса
+        # ⚙️ здесь URL к backend внутри docker-сети
         VITE_API_URL: "http://backend:8080/api"
         VITE_WHATSAPP_PHONE: ${VITE_WHATSAPP_PHONE}
+        VITE_SECRET_CODE: ${SECRET_CODE}   # 🔥 добавляем, чтобы фронт тоже знал код
     container_name: gallery_frontend
     restart: unless-stopped
     ports:
