@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   db:
     image: postgres:16-alpine
@@ -39,14 +41,20 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # 👇 внутри контейнера фронт видит backend по имени сервиса, не по IP
-        VITE_API_URL: "http://176.113.83.92:8080"
+        # 👇 фронт теперь будет использовать публичный HTTPS-домен
+        VITE_API_URL: "https://adlan-kovka.ru:8080/api"
         VITE_WHATSAPP_PHONE: ${VITE_WHATSAPP_PHONE}
         VITE_SECRET_CODE: ${SECRET_CODE}
     container_name: gallery_frontend
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      # подключаем SSL-сертификаты
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # для логов nginx (по желанию)
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend
 
