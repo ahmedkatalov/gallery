@@ -28,8 +28,8 @@ services:
     environment:
       SECRET_CODE: ${SECRET_CODE}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     volumes:
       - uploads-data:/app/static/uploads
     depends_on:
@@ -41,8 +41,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # 👇 фронт теперь будет использовать публичный HTTPS-домен
-        VITE_API_URL: "https://adlan-kovka.ru:8080/api"
+        VITE_API_URL: "https://adlan-kovka.ru/api"
         VITE_WHATSAPP_PHONE: ${VITE_WHATSAPP_PHONE}
         VITE_SECRET_CODE: ${SECRET_CODE}
     container_name: gallery_frontend
@@ -51,9 +50,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # подключаем SSL-сертификаты
+      # Подключаем сертификаты от Let's Encrypt
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      # для логов nginx (по желанию)
+      # Настраиваем Nginx для HTTPS
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - backend
