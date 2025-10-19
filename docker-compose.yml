@@ -41,7 +41,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: "https://adlan-kovka.ru/api"
+        VITE_API_URL: "https://adlan-kovka.ru"
         VITE_WHATSAPP_PHONE: ${VITE_WHATSAPP_PHONE}
         VITE_SECRET_CODE: ${SECRET_CODE}
     container_name: gallery_frontend
