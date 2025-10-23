@@ -13,7 +13,7 @@ export default function OwnerAccessModal({ onClose, onSubmit }) {
     }
 
     setLoading(true)
-    const masterCode = import.meta.env.VITE_SECRET_CODE || '1234'
+    const masterCode = import.meta.env.VITE_SECRET_CODE || '1996'
 
     setTimeout(() => {
       if (code.trim() === masterCode) {
